@@ -7,20 +7,140 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List, Tuple
+import sys
+import os
 from datetime import datetime
 import logging
-import os
+import asyncio
 
-# Import ML Brain components directly from modules
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from data_preprocessor import SafetyEvent, TripDetails, ExtendedData
 from neural_network import neural_network
 from maturity_monitor import maturity_monitor
 from motion_trajectory_brain import motion_trajectory_brain
 from trainer import trainer
 from admin_communicator import admin_communicator
-from __init__ import ml_brain
+from config import config
+from decision_engine import decision_engine
+from alert_policy_engine import alert_policy_engine
+from data_preprocessor import preprocessor
+from rule_ingestor import ingestor
+from communication_analyzer import comm_analyzer
+from conscious_reasoning_engine import conscious_engine
 
 logger = logging.getLogger(__name__)
+
+class MLBrain:
+    def __init__(self):
+        self.is_initialized = False
+        self.config = config
+        self._training_task = None
+        self._last_init_time = None
+    
+    async def init(self):
+        if self.is_initialized:
+            return True
+        
+        try:
+            await asyncio.get_event_loop().run_in_executor(
+                None, neural_network.initialize
+            )
+            await asyncio.get_event_loop().run_in_executor(
+                None, neural_network.load
+            )
+            
+            await maturity_monitor.update_maturity()
+            
+            if hasattr(self.config, 'NLP_MODEL_ENABLED') and self.config.NLP_MODEL_ENABLED:
+                await asyncio.get_event_loop().run_in_executor(
+                    None, comm_analyzer.initialize
+                )
+            
+            if hasattr(self.config, 'CONSCIOUS_MODE_ENABLED') and self.config.CONSCIOUS_MODE_ENABLED:
+                await asyncio.get_event_loop().run_in_executor(
+                    None, conscious_engine.initialize
+                )
+                await asyncio.get_event_loop().run_in_executor(
+                    None, ingestor.ingest_all
+                )
+            
+            self.is_initialized = True
+            self._last_init_time = datetime.now()
+            
+            logger.info("ML Brain System started successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to start ML Brain: {e}", exc_info=True)
+            return False
+    
+    async def get_safety_proposal(self, event, trip_details, extended_data=None):
+        if not self.is_initialized:
+            await self.init()
+        return await decision_engine.get_autonomous_decision(
+            event, trip_details, extended_data
+        )
+    
+    async def learn(self, event, trip_details, extended_data=None):
+        if not self.is_initialized:
+            await self.init()
+        await trainer.train_on_new_event(event, trip_details, extended_data)
+    
+    async def analyze_trajectory(self, trip_id, coordinates, speed, bearing, trip_details, map_verifier=None, state_manager=None):
+        return await motion_trajectory_brain.analyze_trajectory(
+            trip_id, coordinates, speed, bearing, trip_details,
+            map_verifier, state_manager
+        )
+    
+    async def get_maturity_status(self):
+        return await maturity_monitor.get_progress_report()
+    
+    async def is_ready_for_autonomous(self):
+        return await maturity_monitor.is_ready()
+    
+    async def alert_anomaly(self, anomaly):
+        await admin_communicator.alert_anomaly(anomaly)
+    
+    async def send_weekly_report(self):
+        maturity = await maturity_monitor.get_maturity()
+        stats = {
+            "level": maturity.level,
+            "name": maturity.name,
+            "accuracy": maturity.accuracy,
+            "total_events": maturity.total_events,
+            "is_mature": maturity.is_mature,
+            "ready_for_training": True
+        }
+        await admin_communicator.send_weekly_report(stats)
+    
+    def get_model_info(self):
+        return neural_network.get_info()
+    
+    def get_stats(self):
+        return {
+            "version": "2.0.0",
+            "is_initialized": self.is_initialized,
+            "init_time": self._last_init_time.isoformat() if self._last_init_time else None,
+            "model": neural_network.get_info(),
+            "decision_engine": decision_engine.get_stats() if hasattr(decision_engine, 'get_stats') else {},
+            "training": trainer.get_training_report(),
+            "communicator": admin_communicator.get_stats() if hasattr(admin_communicator, 'get_stats') else {}
+        }
+    
+    async def shutdown(self):
+        logger.info("Shutting down ML Brain...")
+        if self._training_task:
+            self._training_task.cancel()
+            try:
+                await self._training_task
+            except asyncio.CancelledError:
+                pass
+        neural_network.save()
+        self.is_initialized = False
+        logger.info("ML Brain shutdown complete")
+
+ml_brain = MLBrain()
 
 # FastAPI App
 app = FastAPI(
