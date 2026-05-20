@@ -25,8 +25,8 @@ echo "👤 [3/5] إضافة المستخدم الحالي لمجموعة Docker.
 sudo usermod -aG docker $USER
 
 echo "📂 [4/5] نسخ ملفات المشروع..."
-# قم بتشغيل هذا الأمر يدوياً لنسخ مجلد backEnd من جهازك:
-# scp -r f:/codeing/wayzon/backEnd ubuntu@YOUR_SERVER_IP:~/wayzon/
+# ملاحظة: استخدم Git clone بدلاً من scp لجلب المشروع:
+# git clone <your-repo-url> ~/wayzon
 
 echo "🔓 [5/5] فتح المنافذ المطلوبة في Firewall..."
 sudo ufw allow 22     # SSH
@@ -38,6 +38,12 @@ sudo ufw allow 8001   # ML Brain
 sudo ufw --force enable
 
 echo ""
-echo "✅ السيرفر جاهز! الآن ادخل لمجلد المشروع وشغّل:"
-echo "   cd ~/wayzon/backEnd"
+echo "✅ السيرفر جاهز!"
+echo ""
+echo "⚠️  ملاحظة مهمة: لتفعيل صلاحيات Docker بدون sudo، قم ب:"
+echo "   newgrp docker"
+echo "   أو قم بتسجيل الخروج والدخول مرة أخرى"
+echo ""
+echo "🚀 الآن ادخل لمجلد المشروع وشغّل:"
+echo "   cd ~/wayzon"
 echo "   docker compose up -d --build"

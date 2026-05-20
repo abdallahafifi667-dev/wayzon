@@ -4,7 +4,7 @@
 FROM node:22-alpine
 
 # Install OS dependencies needed by native modules (bcrypt, sharp, etc.)
-RUN apk add --no-cache python3 make g++ vips-dev
+RUN apk add --no-cache python3 make g++ vips-dev curl wget
 
 WORKDIR /app
 
