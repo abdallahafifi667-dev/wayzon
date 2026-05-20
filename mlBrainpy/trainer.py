@@ -10,10 +10,10 @@ from dataclasses import dataclass
 import logging
 from collections import Counter
 
-from .config import config
-from .neural_network import neural_network
-from .data_preprocessor import preprocessor, SafetyEvent, TripDetails, ExtendedData
-from .db_connector import db_connector
+from config import config
+from neural_network import neural_network
+from data_preprocessor import preprocessor, SafetyEvent, TripDetails, ExtendedData
+from db_connector import db_connector
 
 logger = logging.getLogger(__name__)
 

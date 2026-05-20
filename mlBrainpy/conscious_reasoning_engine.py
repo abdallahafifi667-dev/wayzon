@@ -5,8 +5,8 @@ from datetime import datetime
 import json
 import hashlib
 
-from .config import config
-from .rule_ingestor import ingestor
+from config import config
+from rule_ingestor import ingestor
 
 logger = logging.getLogger(__name__)
 

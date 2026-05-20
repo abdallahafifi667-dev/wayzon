@@ -9,8 +9,8 @@ from dataclasses import dataclass
 import logging
 import json
 
-from .ml_report_builder import MLReportBuilder
-from .alert_policy_engine import alert_policy_engine
+from ml_report_builder import MLReportBuilder
+from alert_policy_engine import alert_policy_engine
 
 logger = logging.getLogger(__name__)
 

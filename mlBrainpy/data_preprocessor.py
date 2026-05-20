@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import logging
 import math
 
-from .config import (
+from config import (
     config, 
     FeatureIndex, 
     COUNTRY_RISK_MAP, 

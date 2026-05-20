@@ -15,8 +15,8 @@ except ImportError:
     SHAP_AVAILABLE = False
     shap = None
 
-from .config import config, FeatureIndex
-from .neural_network import neural_network
+from config import config, FeatureIndex
+from neural_network import neural_network
 
 logger = logging.getLogger(__name__)
 

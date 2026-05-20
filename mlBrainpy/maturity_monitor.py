@@ -9,7 +9,7 @@ from dataclasses import dataclass, asdict
 import logging
 import json
 
-from .config import config, MaturityLevel
+from config import config, MaturityLevel
 
 logger = logging.getLogger(__name__)
 

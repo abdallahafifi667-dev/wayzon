@@ -17,8 +17,8 @@ except ImportError:
     XGBOOST_AVAILABLE = False
     xgb = None
 
-from .config import config
-from .neural_network import neural_network
+from config import config
+from neural_network import neural_network
 
 logger = logging.getLogger(__name__)
 

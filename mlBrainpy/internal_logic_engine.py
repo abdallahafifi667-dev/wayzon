@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, List, Optional
-from .rule_ingestor import ingestor
-from .neural_network import neural_network
+from rule_ingestor import ingestor
+from neural_network import neural_network
 
 logger = logging.getLogger(__name__)
 

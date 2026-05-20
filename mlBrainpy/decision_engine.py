@@ -7,17 +7,17 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import logging
 
-from .config import config
-from .neural_network import neural_network
-from .maturity_monitor import maturity_monitor
-from .data_preprocessor import (
+from config import config
+from neural_network import neural_network
+from maturity_monitor import maturity_monitor
+from data_preprocessor import (
     SafetyEvent, 
     TripDetails, 
     ExtendedData
 )
-from .communication_analyzer import comm_analyzer
-from .conscious_reasoning_engine import conscious_engine
-from .internal_logic_engine import internal_logic
+from communication_analyzer import comm_analyzer
+from conscious_reasoning_engine import conscious_engine
+from internal_logic_engine import internal_logic
 
 logger = logging.getLogger(__name__)
 

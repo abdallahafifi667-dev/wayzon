@@ -16,7 +16,7 @@ import logging
 import json
 import os
 
-from .config import config
+from config import config
 
 logger = logging.getLogger(__name__)
 

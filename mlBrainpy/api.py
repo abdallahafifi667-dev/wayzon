@@ -11,18 +11,14 @@ from datetime import datetime
 import logging
 import os
 
-# Import ML Brain components
-from . import (
-    ml_brain,
-    SafetyEvent,
-    TripDetails,
-    ExtendedData,
-    neural_network,
-    maturity_monitor,
-    motion_trajectory_brain,
-    trainer,
-    admin_communicator
-)
+# Import ML Brain components directly from modules
+from data_preprocessor import SafetyEvent, TripDetails, ExtendedData
+from neural_network import neural_network
+from maturity_monitor import maturity_monitor
+from motion_trajectory_brain import motion_trajectory_brain
+from trainer import trainer
+from admin_communicator import admin_communicator
+from __init__ import ml_brain
 
 logger = logging.getLogger(__name__)
 
