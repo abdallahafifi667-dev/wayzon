@@ -204,8 +204,7 @@ class NeuralNetwork:
                 self.optimizer,
                 mode='min',
                 factor=config.training.scheduler_factor,
-                patience=config.training.scheduler_patience,
-                verbose=True
+                patience=config.training.scheduler_patience
             )
             
             # Mixed precision scaler for GPU
