@@ -1,10 +1,12 @@
 # users_Payment — Dockerfile
 # Production-optimized Node.js container
 
-FROM node:22-alpine
+FROM node:22-slim
 
 # Install OS dependencies needed by native modules (bcrypt, sharp, etc.)
-RUN apk add --no-cache python3 make g++ vips-dev curl wget
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ curl wget \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
