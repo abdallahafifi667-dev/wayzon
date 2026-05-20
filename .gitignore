@@ -1,0 +1,36 @@
+# ============================================================
+#  Wayzon — Root .gitignore
+# ============================================================
+
+# Environment files (أهم شيء — لا ترفعها على GitHub أبداً!)
+**/.env
+**/.env.*
+!**/.env.example
+MyNewApp
+
+# Dependencies
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Build output
+**/dist/
+**/build/
+
+# Logs
+**/*.log
+**/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Mobile app build artifacts
+backEnd/MyNewApp/.expo/
+backEnd/MyNewApp/android/
+backEnd/MyNewApp/ios/

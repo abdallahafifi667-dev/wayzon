@@ -1,0 +1,32 @@
+# Exclude version control
+.git
+.gitignore
+
+# Exclude virtual environments
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude models and logs
+models/**
+logs/**
+checkpoints/**
+
+# Exclude local development files
+requirements-dev.txt
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.flake8
+.isort.cfg
+black.toml
+
+# Exclude Docker files
+Dockerfile
+docker-compose.yml

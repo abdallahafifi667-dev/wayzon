@@ -1,0 +1,186 @@
+version: "3.9"
+
+# ============================================================
+#  Wayzon — Root Docker Compose
+#  يجمع جميع خدمات الباك إند في شبكة واحدة مترابطة
+#  الاستخدام: docker-compose up -d --build
+# ============================================================
+
+networks:
+  wayzon-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  redis_data:
+  kafka_data:
+
+services:
+
+  # ─────────────────────────────────────────────
+  # Infrastructure: MongoDB (shared by both Node services)
+  # ─────────────────────────────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: wayzon-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - wayzon-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Infrastructure: Redis (shared)
+  # ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: wayzon-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - wayzon-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Infrastructure: Zookeeper + Kafka
+  # ─────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: wayzon-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - wayzon-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: wayzon-kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # "kafka" هنا هو اسم الحاوية — يُستخدم داخل الشبكة
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - wayzon-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # ML Brain — Python / FastAPI
+  # ─────────────────────────────────────────────
+  ml-brain:
+    build:
+      context: ./mlBrainpy
+      dockerfile: Dockerfile
+    container_name: wayzon-ml-brain
+    restart: always
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./mlBrainpy/.env
+    environment:
+      - ML_BRAIN_PRODUCTION=true
+      - ML_BRAIN_ENABLED=true
+      # MongoDB داخل الشبكة يُستخدم عبر اسم الحاوية "mongo"
+      - MONGODB_URI=mongodb://mongo:27017/WayzonML
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - wayzon-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # users_Payment — Node.js / Express
+  # ─────────────────────────────────────────────
+  users-payment:
+    build:
+      context: ./users_Payment
+      dockerfile: Dockerfile
+    container_name: wayzon-users-payment
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./users_Payment/.env
+    environment:
+      # تجاوز القيم المحلية باستخدام أسماء الحاويات
+      - MONGO_URL_USERS=mongodb://mongo:27017/WayzonUser
+      - MONGO_URL_ORDERS=mongodb://mongo:27017/WayzonOrders
+      - MONGO_URL_AUDIT=mongodb://mongo:27017/WayzonAudit
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - PORT=8000
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - wayzon-net
+
+  # ─────────────────────────────────────────────
+  # Trip-Monitoring — Node.js / Express
+  # ─────────────────────────────────────────────
+  trip-monitoring:
+    build:
+      context: ./Trip-Monitoring
+      dockerfile: Dockerfile
+    container_name: wayzon-trip-monitoring
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./Trip-Monitoring/.env
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/WayzonMonitoring
+      - REDIS_URL=redis://redis:6379
+      - ML_BRAIN_URL=http://ml-brain:8000
+      - PORT=3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml-brain:
+        condition: service_healthy
+    networks:
+      - wayzon-net

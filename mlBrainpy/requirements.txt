@@ -1,0 +1,49 @@
+# ML Brain Python - Production Dependencies
+# Core ML & Deep Learning
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Optional: Ensemble Methods
+xgboost>=2.0.0
+lightgbm>=4.0.0
+
+# Optional: AutoML & Hyperparameter Tuning
+optuna>=3.4.0
+
+# Optional: Explainability
+shap>=0.43.0
+
+# REST API
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# Generative AI & LLM
+google-generativeai>=0.3.1
+
+# Local NLP & Transformers
+transformers>=4.35.0
+torch>=2.0.0
+sentencepiece>=0.1.99
+tokenizers>=0.14.0
+
+# Async Support
+aiohttp>=3.9.0
+httpx>=0.25.0
+
+# Caching (Production)
+redis>=5.0.0
+
+# Database Drivers
+motor>=3.3.0
+pymongo>=4.6.0
+
+# Monitoring & Logging
+prometheus-client>=0.19.0
+structlog>=23.2.0
+
+# Model Serialization
+onnx>=1.15.0
+onnxruntime>=1.16.0
