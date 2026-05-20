@@ -91,11 +91,6 @@ services:
       - kafka_data:/var/lib/kafka/data
     networks:
       - wayzon-net
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   # ─────────────────────────────────────────────
   # ML Brain — Python / FastAPI
@@ -153,7 +148,7 @@ services:
       redis:
         condition: service_healthy
       kafka:
-        condition: service_healthy
+        condition: service_started
     networks:
       - wayzon-net
 
